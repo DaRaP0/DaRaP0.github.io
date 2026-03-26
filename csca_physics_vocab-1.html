@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="物理词汇">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="CSCA Physics Chinese Vocabulary Flashcards">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>CSCA Physics 物理词汇</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a28;
+    --border: #2a2a3e;
+    --accent: #e8c547;
+    --accent2: #5b8dee;
+    --accent3: #e85b8d;
+    --text: #e8e8f0;
+    --text-dim: #888899;
+    --text-muted: #555566;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(91,141,238,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,141,238,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .logo-tag {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat span {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat.known span { color: var(--green); }
+  .stat.unknown span { color: var(--red); }
+
+  /* TOPIC FILTER */
+  .topic-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .topic-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .topic-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .topic-btn.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #fff;
+  }
+
+  /* FLASHCARD */
+  .card-area {
+    perspective: 1000px;
+    margin-bottom: 24px;
+  }
+
+  .flashcard {
+    width: 100%;
+    height: 280px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .flashcard.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 12px;
+  }
+
+  .card-face.back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, #1a1a28 0%, #1e1a2e 100%);
+    border-color: var(--accent2);
+  }
+
+  .card-topic {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .card-num {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .card-hint {
+    position: absolute;
+    bottom: 16px;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .card-chinese {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(36px, 7vw, 56px);
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .card-pinyin {
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    font-weight: 400;
+  }
+
+  .card-english {
+    font-size: clamp(18px, 3vw, 26px);
+    color: var(--text);
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .card-example {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+    font-family: 'Noto Sans SC', sans-serif;
+    margin-top: 4px;
+  }
+
+  .card-formula {
+    font-size: 14px;
+    color: var(--accent2);
+    text-align: center;
+    background: rgba(91,141,238,0.1);
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(91,141,238,0.2);
+    letter-spacing: 1px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-prev {
+    background: var(--surface);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .btn-prev:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  .btn-next {
+    background: var(--surface);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .btn-next:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  .btn-known {
+    background: var(--green);
+    color: #0a0f0a;
+  }
+
+  .btn-known:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-unknown {
+    background: var(--red);
+    color: #0f0a0a;
+  }
+
+  .btn-unknown:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-shuffle {
+    background: var(--accent);
+    color: #0f0a00;
+  }
+
+  .btn-shuffle:hover { opacity: 0.85; }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    background: var(--surface);
+    border-radius: 4px;
+    height: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* VOCAB LIST */
+  .list-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .btn-list {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .btn-list:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .vocab-list {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .vocab-list.visible {
+    display: flex;
+  }
+
+  .vocab-section-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding: 16px 0 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .vocab-row {
+    display: grid;
+    grid-template-columns: 120px 160px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: background 0.15s;
+    font-size: 13px;
+  }
+
+  .vocab-row:hover {
+    background: var(--surface);
+  }
+
+  .vocab-row .zh {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .vocab-row .py {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .vocab-row .en {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .vocab-row .known-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .vocab-row .known-dot.yes {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  @media (max-width: 600px) {
+    .vocab-row {
+      grid-template-columns: 100px 1fr auto;
+    }
+    .vocab-row .py { display: none; }
+  }
+
+  /* FORMULA SHEET */
+  .formula-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .btn-formula {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .btn-formula:hover { background: rgba(232,197,71,0.1); }
+  .formula-sheet {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .formula-sheet.visible { display: flex; }
+  .formula-topic-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .formula-topic-header {
+    background: rgba(91,141,238,0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media (max-width: 600px) { .formula-grid { grid-template-columns: 1fr; } }
+  .formula-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(42,42,62,0.5);
+    border-right: 1px solid rgba(42,42,62,0.5);
+  }
+  .formula-item:nth-child(even) { border-right: none; }
+  .formula-name { font-family: 'Noto Sans SC', sans-serif; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  .formula-eq { font-size: 13px; color: var(--accent2); letter-spacing: 0.5px; font-weight: 700; }
+  .formula-note { font-size: 10px; color: var(--text-muted); margin-top: 3px; font-family: 'Noto Sans SC', sans-serif; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-tag">CSCA 物理</div>
+    <h1>Physics Vocabulary</h1>
+    <div class="subtitle">高中物理 · Chinese Exam Prep · All Topics</div>
+  </header>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat"><span id="totalCount">0</span> total</div>
+    <div class="stat known"><span id="knownCount">0</span> known ✓</div>
+    <div class="stat unknown"><span id="unknownCount">0</span> to review</div>
+    <div class="stat"><span id="topicLabel">All</span> topic</div>
+  </div>
+
+  <div class="topic-filter" id="topicFilter"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+
+  <div class="card-area">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="card-face front" id="cardFront">
+        <div class="card-topic" id="cardTopic">—</div>
+        <div class="card-num" id="cardNum">0/0</div>
+        <div class="card-chinese" id="cardChinese">—</div>
+        <div class="card-pinyin" id="cardPinyin">—</div>
+        <div class="card-hint">click to reveal →</div>
+      </div>
+      <div class="card-face back" id="cardBack">
+        <div class="card-topic" id="cardTopicBack">—</div>
+        <div class="card-english" id="cardEnglish">—</div>
+        <div class="card-formula" id="cardFormula" style="display:none"></div>
+        <div class="card-example" id="cardExample">—</div>
+        <div class="card-hint">click to flip back ←</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-prev" onclick="prevCard()">← Prev</button>
+    <button class="btn btn-unknown" onclick="markUnknown()">✗ Review</button>
+    <button class="btn btn-known" onclick="markKnown()">✓ Known</button>
+    <button class="btn btn-next" onclick="nextCard()">Next →</button>
+    <button class="btn btn-shuffle" onclick="shuffleDeck()">⇌ Shuffle</button>
+  </div>
+
+  <div class="list-toggle">
+    <button class="btn-list" onclick="toggleList()">Show Full Vocabulary List ↓</button>
+  </div>
+
+  <div class="vocab-list" id="vocabList"></div>
+
+  <div class="formula-toggle">
+    <button class="btn-formula" onclick="toggleFormulas()">Show Formula Sheet ↓</button>
+  </div>
+
+  <div class="formula-sheet" id="formulaSheet"></div>
+
+</div>
+
+<script>
+const ALL_VOCAB = [
+  // ── KINEMATICS 运动学 ──
+  { zh:"位移", py:"wèi yí", en:"Displacement", topic:"Kinematics", formula:"Δx = x₂ - x₁", ex:"物体从A移到B的位移是矢量。" },
+  { zh:"速度", py:"sù dù", en:"Velocity", topic:"Kinematics", formula:"v = Δx/Δt", ex:"速度是位移随时间的变化率。" },
+  { zh:"速率", py:"sù lǜ", en:"Speed", topic:"Kinematics", formula:"", ex:"速率是速度的大小，是标量。" },
+  { zh:"加速度", py:"jiā sù dù", en:"Acceleration", topic:"Kinematics", formula:"a = Δv/Δt", ex:"加速度是速度随时间的变化率。" },
+  { zh:"匀速运动", py:"yún sù yùn dòng", en:"Uniform Motion", topic:"Kinematics", formula:"v = const", ex:"匀速直线运动中加速度为零。" },
+  { zh:"匀加速运动", py:"yún jiā sù yùn dòng", en:"Uniformly Accelerated Motion", topic:"Kinematics", formula:"v = v₀ + at", ex:"自由落体是匀加速运动。" },
+  { zh:"自由落体", py:"zì yóu luò tǐ", en:"Free Fall", topic:"Kinematics", formula:"v = gt, h = ½gt²", ex:"忽略空气阻力时物体做自由落体运动。" },
+  { zh:"抛体运动", py:"pāo tǐ yùn dòng", en:"Projectile Motion", topic:"Kinematics", formula:"x=v₀t, y=½gt²", ex:"抛体运动可以分解为水平和竖直方向。" },
+  { zh:"参考系", py:"cān kǎo xì", en:"Reference Frame", topic:"Kinematics", formula:"", ex:"运动是相对参考系而言的。" },
+  { zh:"相对运动", py:"xiāng duì yùn dòng", en:"Relative Motion", topic:"Kinematics", formula:"v_AB = v_A - v_B", ex:"两车相向而行时相对速度较大。" },
+  { zh:"轨迹", py:"guǐ jì", en:"Trajectory", topic:"Kinematics", formula:"", ex:"抛体运动的轨迹是抛物线。" },
+  { zh:"位移-时间图", py:"wèi yí shí jiān tú", en:"Displacement-Time Graph", topic:"Kinematics", formula:"slope = v", ex:"斜率代表速度。" },
+  { zh:"速度-时间图", py:"sù dù shí jiān tú", en:"Velocity-Time Graph", topic:"Kinematics", formula:"slope = a", ex:"斜率代表加速度，面积代表位移。" },
+
+  // ── NEWTON'S LAWS 牛顿定律 ──
+  { zh:"惯性", py:"guàn xìng", en:"Inertia", topic:"Newton's Laws", formula:"", ex:"质量越大，惯性越大。" },
+  { zh:"力", py:"lì", en:"Force", topic:"Newton's Laws", formula:"F = ma", ex:"力是物体间的相互作用。" },
+  { zh:"合力", py:"hé lì", en:"Net Force / Resultant Force", topic:"Newton's Laws", formula:"F_net = Σ F", ex:"合力是所有力的矢量和。" },
+  { zh:"摩擦力", py:"mó cā lì", en:"Friction Force", topic:"Newton's Laws", formula:"f = μN", ex:"动摩擦力与正压力成正比。" },
+  { zh:"正压力", py:"zhèng yā lì", en:"Normal Force", topic:"Newton's Laws", formula:"N = mg cosθ", ex:"正压力垂直于接触面。" },
+  { zh:"重力", py:"zhòng lì", en:"Gravity (Weight)", topic:"Newton's Laws", formula:"G = mg", ex:"重力向下，大小等于mg。" },
+  { zh:"张力", py:"zhāng lì", en:"Tension", topic:"Newton's Laws", formula:"T = F", ex:"绳子传递张力。" },
+  { zh:"作用力与反作用力", py:"zuò yòng lì yǔ fǎn zuò yòng lì", en:"Action & Reaction", topic:"Newton's Laws", formula:"F₁₂ = -F₂₁", ex:"牛顿第三定律：力总是成对出现。" },
+  { zh:"平衡", py:"píng héng", en:"Equilibrium", topic:"Newton's Laws", formula:"ΣF = 0", ex:"静止物体处于受力平衡状态。" },
+  { zh:"自由体图", py:"zì yóu tǐ tú", en:"Free Body Diagram", topic:"Newton's Laws", formula:"", ex:"用自由体图分析受力情况。" },
+  { zh:"质量", py:"zhì liàng", en:"Mass", topic:"Newton's Laws", formula:"m = F/a", ex:"质量是惯性的量度。" },
+
+  // ── WORK, ENERGY & POWER 功、能、功率 ──
+  { zh:"功", py:"gōng", en:"Work", topic:"Energy", formula:"W = Fd cosθ", ex:"力与位移方向相同时做正功。" },
+  { zh:"动能", py:"dòng néng", en:"Kinetic Energy", topic:"Energy", formula:"Eₖ = ½mv²", ex:"运动的物体具有动能。" },
+  { zh:"势能", py:"shì néng", en:"Potential Energy", topic:"Energy", formula:"Ep = mgh", ex:"重力势能与高度成正比。" },
+  { zh:"机械能", py:"jī xiè néng", en:"Mechanical Energy", topic:"Energy", formula:"E = Eₖ + Ep", ex:"无摩擦时机械能守恒。" },
+  { zh:"功率", py:"gōng lǜ", en:"Power", topic:"Energy", formula:"P = W/t = Fv", ex:"功率是做功的快慢。" },
+  { zh:"能量守恒", py:"néng liàng shǒu héng", en:"Conservation of Energy", topic:"Energy", formula:"E_total = const", ex:"能量既不能被创造也不能被消灭。" },
+  { zh:"功能定理", py:"gōng néng dìng lǐ", en:"Work-Energy Theorem", topic:"Energy", formula:"W_net = ΔEₖ", ex:"合外力做的功等于动能变化。" },
+  { zh:"效率", py:"xiào lǜ", en:"Efficiency", topic:"Energy", formula:"η = W_useful/W_total", ex:"效率总是小于100%。" },
+  { zh:"弹性势能", py:"tán xìng shì néng", en:"Elastic Potential Energy", topic:"Energy", formula:"E = ½kx²", ex:"弹簧压缩时储存弹性势能。" },
+
+  // ── MOMENTUM 动量 ──
+  { zh:"动量", py:"dòng liàng", en:"Momentum", topic:"Momentum", formula:"p = mv", ex:"动量是矢量，方向与速度相同。" },
+  { zh:"冲量", py:"chōng liàng", en:"Impulse", topic:"Momentum", formula:"J = FΔt = Δp", ex:"冲量等于动量的变化。" },
+  { zh:"动量守恒", py:"dòng liàng shǒu héng", en:"Conservation of Momentum", topic:"Momentum", formula:"p₁ + p₂ = const", ex:"系统不受外力时动量守恒。" },
+  { zh:"碰撞", py:"pèng zhuàng", en:"Collision", topic:"Momentum", formula:"", ex:"碰撞分为弹性碰撞和非弹性碰撞。" },
+  { zh:"弹性碰撞", py:"tán xìng pèng zhuàng", en:"Elastic Collision", topic:"Momentum", formula:"KE conserved", ex:"弹性碰撞中动能守恒。" },
+  { zh:"非弹性碰撞", py:"fēi tán xìng pèng zhuàng", en:"Inelastic Collision", topic:"Momentum", formula:"KE not conserved", ex:"非弹性碰撞中动能不守恒。" },
+
+  // ── CIRCULAR MOTION & GRAVITATION 圆周运动与引力 ──
+  { zh:"圆周运动", py:"yuán zhōu yùn dòng", en:"Circular Motion", topic:"Circular & Gravity", formula:"v = 2πr/T", ex:"圆周运动的速度方向始终切于圆周。" },
+  { zh:"向心力", py:"xiàng xīn lì", en:"Centripetal Force", topic:"Circular & Gravity", formula:"F = mv²/r", ex:"向心力指向圆心。" },
+  { zh:"向心加速度", py:"xiàng xīn jiā sù dù", en:"Centripetal Acceleration", topic:"Circular & Gravity", formula:"a = v²/r = ω²r", ex:"向心加速度始终指向圆心。" },
+  { zh:"周期", py:"zhōu qī", en:"Period", topic:"Circular & Gravity", formula:"T = 2πr/v", ex:"卫星绕地球一圈的时间叫周期。" },
+  { zh:"频率", py:"pín lǜ", en:"Frequency", topic:"Circular & Gravity", formula:"f = 1/T", ex:"频率是周期的倒数。" },
+  { zh:"角速度", py:"jiǎo sù dù", en:"Angular Velocity", topic:"Circular & Gravity", formula:"ω = 2π/T", ex:"角速度表示转动快慢。" },
+  { zh:"万有引力", py:"wàn yǒu yǐn lì", en:"Universal Gravitation", topic:"Circular & Gravity", formula:"F = Gm₁m₂/r²", ex:"任何有质量的物体之间都有引力。" },
+  { zh:"引力常量", py:"yǐn lì cháng liàng", en:"Gravitational Constant", topic:"Circular & Gravity", formula:"G = 6.67×10⁻¹¹", ex:"引力常量G是自然界的基本常数。" },
+  { zh:"开普勒定律", py:"kāi pǔ lè dìng lǜ", en:"Kepler's Laws", topic:"Circular & Gravity", formula:"T² ∝ r³", ex:"行星轨道周期的平方与轨道半径的立方成正比。" },
+  { zh:"逃逸速度", py:"táo yì sù dù", en:"Escape Velocity", topic:"Circular & Gravity", formula:"v = √(2gR)", ex:"地球逃逸速度约为11.2 km/s。" },
+  { zh:"同步卫星", py:"tóng bù wèi xīng", en:"Geostationary Satellite", topic:"Circular & Gravity", formula:"T = 24h", ex:"同步卫星与地球自转周期相同。" },
+
+  // ── ELECTROSTATICS 静电学 ──
+  { zh:"电荷", py:"diàn hè", en:"Electric Charge", topic:"Electrostatics", formula:"Q (Coulombs)", ex:"电荷分正电荷和负电荷。" },
+  { zh:"库仑定律", py:"kù lún dìng lǜ", en:"Coulomb's Law", topic:"Electrostatics", formula:"F = kq₁q₂/r²", ex:"库仑力与电荷量成正比，与距离的平方成反比。" },
+  { zh:"电场", py:"diàn chǎng", en:"Electric Field", topic:"Electrostatics", formula:"E = F/q", ex:"电场是电荷周围的力场。" },
+  { zh:"电场强度", py:"diàn chǎng qiáng dù", en:"Electric Field Strength", topic:"Electrostatics", formula:"E = kQ/r²", ex:"电场强度是单位正电荷受到的力。" },
+  { zh:"电势", py:"diàn shì", en:"Electric Potential", topic:"Electrostatics", formula:"V = kQ/r", ex:"电势是标量，单位是伏特。" },
+  { zh:"电势差", py:"diàn shì chā", en:"Potential Difference / Voltage", topic:"Electrostatics", formula:"U = V₁ - V₂", ex:"电势差也叫电压。" },
+  { zh:"电场线", py:"diàn chǎng xiàn", en:"Electric Field Lines", topic:"Electrostatics", formula:"", ex:"电场线从正电荷指向负电荷。" },
+  { zh:"导体", py:"dǎo tǐ", en:"Conductor", topic:"Electrostatics", formula:"", ex:"金属是良好的导体。" },
+  { zh:"绝缘体", py:"jué yuán tǐ", en:"Insulator", topic:"Electrostatics", formula:"", ex:"橡胶是绝缘体。" },
+  { zh:"静电感应", py:"jìng diàn gǎn yìng", en:"Electrostatic Induction", topic:"Electrostatics", formula:"", ex:"导体在外电场中会发生静电感应。" },
+
+  // ── DC CIRCUITS 直流电路 ──
+  { zh:"电流", py:"diàn liú", en:"Electric Current", topic:"DC Circuits", formula:"I = Q/t", ex:"电流是单位时间内通过截面的电荷量。" },
+  { zh:"电压", py:"diàn yā", en:"Voltage", topic:"DC Circuits", formula:"U = IR", ex:"电压驱动电流流动。" },
+  { zh:"电阻", py:"diàn zǔ", en:"Resistance", topic:"DC Circuits", formula:"R = U/I", ex:"电阻阻碍电流的流动。" },
+  { zh:"欧姆定律", py:"ōu mǔ dìng lǜ", en:"Ohm's Law", topic:"DC Circuits", formula:"U = IR", ex:"欧姆定律是电路分析的基础。" },
+  { zh:"串联", py:"chuàn lián", en:"Series Circuit", topic:"DC Circuits", formula:"R_total = R₁+R₂", ex:"串联电路中电流相同。" },
+  { zh:"并联", py:"bìng lián", en:"Parallel Circuit", topic:"DC Circuits", formula:"1/R = 1/R₁+1/R₂", ex:"并联电路中电压相同。" },
+  { zh:"电功率", py:"diàn gōng lǜ", en:"Electrical Power", topic:"DC Circuits", formula:"P = UI = I²R", ex:"电功率表示电能消耗的快慢。" },
+  { zh:"电动势", py:"diàn dòng shì", en:"Electromotive Force (EMF)", topic:"DC Circuits", formula:"ε = U + Ir", ex:"电动势是电源将其他能量转化为电能的能力。" },
+  { zh:"内阻", py:"nèi zǔ", en:"Internal Resistance", topic:"DC Circuits", formula:"U = ε - Ir", ex:"电池有内阻，会消耗一部分电能。" },
+  { zh:"基尔霍夫定律", py:"jī ěr huò fū dìng lǜ", en:"Kirchhoff's Laws", topic:"DC Circuits", formula:"ΣI=0, ΣV=0", ex:"基尔霍夫定律用于分析复杂电路。" },
+
+  // ── MAGNETISM 磁学 ──
+  { zh:"磁场", py:"cí chǎng", en:"Magnetic Field", topic:"Magnetism", formula:"F = qvB sinθ", ex:"电流在磁场中受到安培力。" },
+  { zh:"磁感应强度", py:"cí gǎn yìng qiáng dù", en:"Magnetic Flux Density", topic:"Magnetism", formula:"B (Tesla)", ex:"磁感应强度的单位是特斯拉。" },
+  { zh:"安培力", py:"ān péi lì", en:"Ampere Force", topic:"Magnetism", formula:"F = BIL sinθ", ex:"通电导体在磁场中受安培力。" },
+  { zh:"洛伦兹力", py:"luò lún zī lì", en:"Lorentz Force", topic:"Magnetism", formula:"F = qvB sinθ", ex:"洛伦兹力不做功。" },
+  { zh:"电磁感应", py:"diàn cí gǎn yìng", en:"Electromagnetic Induction", topic:"Magnetism", formula:"ε = -ΔΦ/Δt", ex:"磁通量变化产生感应电动势。" },
+  { zh:"磁通量", py:"cí tōng liàng", en:"Magnetic Flux", topic:"Magnetism", formula:"Φ = BA cosθ", ex:"磁通量是磁场通过面积的量度。" },
+  { zh:"楞次定律", py:"léng cì dìng lǜ", en:"Lenz's Law", topic:"Magnetism", formula:"", ex:"感应电流的方向总是阻碍磁通量的变化。" },
+  { zh:"左手定则", py:"zuǒ shǒu dìng zé", en:"Left-Hand Rule", topic:"Magnetism", formula:"", ex:"用左手定则判断安培力方向。" },
+  { zh:"右手定则", py:"yòu shǒu dìng zé", en:"Right-Hand Rule", topic:"Magnetism", formula:"", ex:"用右手定则判断感应电流方向。" },
+
+  // ── WAVES 波动 ──
+  { zh:"波", py:"bō", en:"Wave", topic:"Waves", formula:"v = fλ", ex:"波是能量传递的一种方式。" },
+  { zh:"波长", py:"bō cháng", en:"Wavelength", topic:"Waves", formula:"λ = v/f", ex:"波长是相邻两个波峰之间的距离。" },
+  { zh:"振幅", py:"zhèn fú", en:"Amplitude", topic:"Waves", formula:"", ex:"振幅决定波的能量大小。" },
+  { zh:"横波", py:"héng bō", en:"Transverse Wave", topic:"Waves", formula:"", ex:"光是横波，振动方向与传播方向垂直。" },
+  { zh:"纵波", py:"zòng bō", en:"Longitudinal Wave", topic:"Waves", formula:"", ex:"声音是纵波，振动方向与传播方向平行。" },
+  { zh:"干涉", py:"gān shè", en:"Interference", topic:"Waves", formula:"", ex:"两列波叠加时产生干涉现象。" },
+  { zh:"衍射", py:"yǎn shè", en:"Diffraction", topic:"Waves", formula:"", ex:"波绕过障碍物的现象叫衍射。" },
+  { zh:"叠加原理", py:"dié jiā yuán lǐ", en:"Superposition Principle", topic:"Waves", formula:"y = y₁ + y₂", ex:"两列波相遇时位移叠加。" },
+  { zh:"驻波", py:"zhù bō", en:"Standing Wave", topic:"Waves", formula:"", ex:"两列反向传播的波叠加形成驻波。" },
+  { zh:"多普勒效应", py:"duō pǔ lè xiào yìng", en:"Doppler Effect", topic:"Waves", formula:"f' = f(v±v_obs)/(v∓v_src)", ex:"救护车靠近时音调变高。" },
+  { zh:"简谐运动", py:"jiǎn xié yùn dòng", en:"Simple Harmonic Motion", topic:"Waves", formula:"x = A cos(ωt)", ex:"弹簧振子做简谐运动。" },
+  { zh:"共振", py:"gòng zhèn", en:"Resonance", topic:"Waves", formula:"f_drive = f_natural", ex:"驱动频率等于固有频率时发生共振。" },
+
+  // ── THERMODYNAMICS 热力学 ──
+  { zh:"温度", py:"wēn dù", en:"Temperature", topic:"Thermodynamics", formula:"T(K) = T(°C) + 273", ex:"温度是分子平均动能的量度。" },
+  { zh:"热量", py:"rè liàng", en:"Heat", topic:"Thermodynamics", formula:"Q = mcΔT", ex:"热量是热传递过程中转移的能量。" },
+  { zh:"内能", py:"nèi néng", en:"Internal Energy", topic:"Thermodynamics", formula:"", ex:"内能是物体内部所有分子动能和势能之和。" },
+  { zh:"热力学第一定律", py:"rè lì xué dì yī dìng lǜ", en:"First Law of Thermodynamics", topic:"Thermodynamics", formula:"ΔU = Q - W", ex:"能量守恒定律在热力学中的表达。" },
+  { zh:"理想气体", py:"lǐ xiǎng qì tǐ", en:"Ideal Gas", topic:"Thermodynamics", formula:"PV = nRT", ex:"理想气体满足理想气体方程。" },
+  { zh:"玻意耳定律", py:"bō yì ěr dìng lǜ", en:"Boyle's Law", topic:"Thermodynamics", formula:"P₁V₁ = P₂V₂", ex:"温度不变时，气体压强与体积成反比。" },
+  { zh:"查理定律", py:"zhā lǐ dìng lǜ", en:"Charles's Law", topic:"Thermodynamics", formula:"V₁/T₁ = V₂/T₂", ex:"压强不变时，气体体积与温度成正比。" },
+  { zh:"比热容", py:"bǐ rè róng", en:"Specific Heat Capacity", topic:"Thermodynamics", formula:"Q = mcΔT", ex:"水的比热容较大，是良好的冷却剂。" },
+  { zh:"热传导", py:"rè chuán dǎo", en:"Heat Conduction", topic:"Thermodynamics", formula:"", ex:"热量从高温物体传向低温物体。" },
+
+  // ── OPTICS 光学 ──
+  { zh:"光的反射", py:"guāng de fǎn shè", en:"Reflection of Light", topic:"Optics", formula:"θ_i = θ_r", ex:"入射角等于反射角。" },
+  { zh:"光的折射", py:"guāng de zhé shè", en:"Refraction of Light", topic:"Optics", formula:"n₁sinθ₁ = n₂sinθ₂", ex:"光从空气进入玻璃时发生折射。" },
+  { zh:"折射率", py:"zhé shè lǜ", en:"Refractive Index", topic:"Optics", formula:"n = c/v", ex:"折射率越大，光速越慢。" },
+  { zh:"全内反射", py:"quán nèi fǎn shè", en:"Total Internal Reflection", topic:"Optics", formula:"θ_c = arcsin(1/n)", ex:"光从密介质到疏介质时可能发生全反射。" },
+  { zh:"凸透镜", py:"tū tòu jìng", en:"Convex Lens", topic:"Optics", formula:"1/f = 1/u + 1/v", ex:"凸透镜会聚光线，可用于放大镜。" },
+  { zh:"凹透镜", py:"āo tòu jìng", en:"Concave Lens", topic:"Optics", formula:"f < 0", ex:"凹透镜发散光线，用于矫正近视。" },
+  { zh:"焦距", py:"jiāo jù", en:"Focal Length", topic:"Optics", formula:"f = R/2", ex:"焦距越小，透镜折射能力越强。" },
+  { zh:"光的干涉", py:"guāng de gān shè", en:"Light Interference", topic:"Optics", formula:"", ex:"双缝干涉产生明暗相间的条纹。" },
+  { zh:"光的衍射", py:"guāng de yǎn shè", en:"Light Diffraction", topic:"Optics", formula:"", ex:"光通过小孔时发生衍射。" },
+  { zh:"光的偏振", py:"guāng de piān zhèn", en:"Polarization of Light", topic:"Optics", formula:"", ex:"横波才能发生偏振，光是横波。" },
+
+  // ── MODERN PHYSICS 现代物理 ──
+  { zh:"光电效应", py:"guāng diàn xiào yìng", en:"Photoelectric Effect", topic:"Modern Physics", formula:"E = hf - W", ex:"光照射金属时逸出电子的现象。" },
+  { zh:"光子", py:"guāng zǐ", en:"Photon", topic:"Modern Physics", formula:"E = hf", ex:"光由光子组成，光子能量为hf。" },
+  { zh:"普朗克常数", py:"pǔ lǎng kè cháng shù", en:"Planck's Constant", topic:"Modern Physics", formula:"h = 6.63×10⁻³⁴ J·s", ex:"普朗克常数是量子力学的基本常数。" },
+  { zh:"波粒二象性", py:"bō lì èr xiàng xìng", en:"Wave-Particle Duality", topic:"Modern Physics", formula:"λ = h/p", ex:"光和电子都具有波粒二象性。" },
+  { zh:"原子模型", py:"yuán zǐ mó xíng", en:"Atomic Model", topic:"Modern Physics", formula:"", ex:"玻尔模型解释了氢原子光谱。" },
+  { zh:"能级", py:"néng jí", en:"Energy Level", topic:"Modern Physics", formula:"ΔE = hf", ex:"电子跃迁时吸收或发射光子。" },
+  { zh:"核裂变", py:"hé liè biàn", en:"Nuclear Fission", topic:"Modern Physics", formula:"E = mc²", ex:"重核分裂为轻核，释放大量能量。" },
+  { zh:"核聚变", py:"hé jù biàn", en:"Nuclear Fusion", topic:"Modern Physics", formula:"E = mc²", ex:"轻核聚合为重核，是太阳能量的来源。" },
+  { zh:"放射性", py:"fàng shè xìng", en:"Radioactivity", topic:"Modern Physics", formula:"", ex:"不稳定的原子核自发发出射线。" },
+  { zh:"半衰期", py:"bàn shuāi qī", en:"Half-Life", topic:"Modern Physics", formula:"N = N₀(½)^(t/T½)", ex:"半衰期是放射性物质衰减一半所需的时间。" },
+  { zh:"质能方程", py:"zhì néng fāng chéng", en:"Mass-Energy Equation", topic:"Modern Physics", formula:"E = mc²", ex:"爱因斯坦的质能方程揭示了质量与能量的关系。" },
+];
+
+const TOPICS = ["All", ...new Set(ALL_VOCAB.map(v => v.topic))];
+
+let currentTopic = "All";
+let deck = [];
+let index = 0;
+let isFlipped = false;
+let knownSet = new Set();
+
+function getFiltered() {
+  return currentTopic === "All" ? ALL_VOCAB : ALL_VOCAB.filter(v => v.topic === currentTopic);
+}
+
+function buildDeck() {
+  deck = [...getFiltered()];
+  index = 0;
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateCard();
+  updateStats();
+}
+
+function updateCard() {
+  if (!deck.length) return;
+  const v = deck[index];
+  document.getElementById('cardTopic').textContent = v.topic;
+  document.getElementById('cardTopicBack').textContent = v.topic;
+  document.getElementById('cardNum').textContent = `${index+1}/${deck.length}`;
+  document.getElementById('cardChinese').textContent = v.zh;
+  document.getElementById('cardPinyin').textContent = v.py;
+  document.getElementById('cardEnglish').textContent = v.en;
+  document.getElementById('cardExample').textContent = v.ex;
+  const formulaEl = document.getElementById('cardFormula');
+  if (v.formula) {
+    formulaEl.textContent = v.formula;
+    formulaEl.style.display = 'block';
+  } else {
+    formulaEl.style.display = 'none';
+  }
+  // Progress
+  const filtered = getFiltered();
+  const knownInFiltered = filtered.filter(v => knownSet.has(v.zh)).length;
+  const pct = filtered.length ? (knownInFiltered / filtered.length * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function updateStats() {
+  const filtered = getFiltered();
+  const knownInFiltered = filtered.filter(v => knownSet.has(v.zh)).length;
+  document.getElementById('totalCount').textContent = filtered.length;
+  document.getElementById('knownCount').textContent = knownInFiltered;
+  document.getElementById('unknownCount').textContent = filtered.length - knownInFiltered;
+  document.getElementById('topicLabel').textContent = currentTopic;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  if (index < deck.length - 1) index++;
+  else index = 0;
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateCard();
+}
+
+function prevCard() {
+  if (index > 0) index--;
+  else index = deck.length - 1;
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateCard();
+}
+
+function markKnown() {
+  knownSet.add(deck[index].zh);
+  updateStats();
+  renderList();
+  nextCard();
+}
+
+function markUnknown() {
+  knownSet.delete(deck[index].zh);
+  updateStats();
+  renderList();
+  nextCard();
+}
+
+function shuffleDeck() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  index = 0;
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateCard();
+}
+
+function buildTopicFilter() {
+  const container = document.getElementById('topicFilter');
+  TOPICS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn' + (t === 'All' ? ' active' : '');
+    btn.textContent = t;
+    btn.onclick = () => {
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTopic = t;
+      buildDeck();
+    };
+    container.appendChild(btn);
+  });
+}
+
+function renderList() {
+  const container = document.getElementById('vocabList');
+  container.innerHTML = '';
+  const filtered = currentTopic === 'All' ? ALL_VOCAB : ALL_VOCAB.filter(v => v.topic === currentTopic);
+  const grouped = {};
+  filtered.forEach(v => {
+    if (!grouped[v.topic]) grouped[v.topic] = [];
+    grouped[v.topic].push(v);
+  });
+  Object.entries(grouped).forEach(([topic, words]) => {
+    const title = document.createElement('div');
+    title.className = 'vocab-section-title';
+    title.textContent = topic;
+    container.appendChild(title);
+    words.forEach(v => {
+      const row = document.createElement('div');
+      row.className = 'vocab-row';
+      row.innerHTML = `
+        <div class="zh">${v.zh}</div>
+        <div class="py">${v.py}</div>
+        <div class="en">${v.en}</div>
+        <div class="known-dot ${knownSet.has(v.zh) ? 'yes' : ''}"></div>
+      `;
+      container.appendChild(row);
+    });
+  });
+}
+
+function toggleList() {
+  const list = document.getElementById('vocabList');
+  const isVisible = list.classList.toggle('visible');
+  document.querySelector('.btn-list').textContent = isVisible
+    ? 'Hide Vocabulary List ↑'
+    : 'Show Full Vocabulary List ↓';
+  if (isVisible) renderList();
+}
+
+
+// ── FORMULA SHEET DATA ──
+const FORMULA_SHEET = [
+  { topic: "Kinematics 运动学", formulas: [
+    { name: "Displacement 位移", eq: "Δx = x₂ − x₁", note: "Vector quantity" },
+    { name: "Average velocity 平均速度", eq: "v̄ = Δx / Δt", note: "" },
+    { name: "Uniform accel. 匀加速", eq: "v = v₀ + at", note: "" },
+    { name: "Displacement (UAM)", eq: "x = v₀t + ½at²", note: "" },
+    { name: "Velocity squared 速度²", eq: "v² = v₀² + 2ax", note: "" },
+    { name: "Free fall 自由落体", eq: "h = ½gt²,  v = gt", note: "g ≈ 9.8 m/s²" },
+    { name: "Projectile horiz. 水平抛", eq: "x = v₀t", note: "" },
+    { name: "Projectile vertical 竖直", eq: "y = ½gt²", note: "" },
+    { name: "Relative velocity 相对速度", eq: "v_AB = v_A − v_B", note: "Vector subtraction" },
+    { name: "v-t graph slope 斜率", eq: "slope = a, area = Δx", note: "" },
+  ]},
+  { topic: "Newton's Laws 牛顿定律", formulas: [
+    { name: "Newton's 2nd 第二定律", eq: "F = ma", note: "Net force" },
+    { name: "Weight 重力", eq: "G = mg", note: "g ≈ 9.8 m/s²" },
+    { name: "Normal force 正压力", eq: "N = mg cosθ", note: "On incline" },
+    { name: "Friction 摩擦力", eq: "f = μN", note: "μ = friction coeff." },
+    { name: "Resultant 合力 (⊥)", eq: "F = √(F₁² + F₂²)", note: "Perpendicular forces" },
+    { name: "Equilibrium 平衡", eq: "ΣF = 0,  Στ = 0", note: "Static" },
+    { name: "Newton's 3rd 第三定律", eq: "F₁₂ = −F₂₁", note: "Equal & opposite" },
+    { name: "Incline accel. 斜面", eq: "a = g sinθ − μg cosθ", note: "" },
+  ]},
+  { topic: "Work, Energy & Power 功能", formulas: [
+    { name: "Work 功", eq: "W = Fd cosθ", note: "θ between F and d" },
+    { name: "Kinetic energy 动能", eq: "Eₖ = ½mv²", note: "" },
+    { name: "Gravitational PE 重力势能", eq: "Ep = mgh", note: "" },
+    { name: "Elastic PE 弹性势能", eq: "E = ½kx²", note: "Hooke: F = kx" },
+    { name: "Work-energy theorem 功能定理", eq: "W_net = ΔEₖ", note: "" },
+    { name: "Mech. energy 机械能", eq: "E = Eₖ + Ep = const", note: "No friction" },
+    { name: "Power 功率", eq: "P = W/t = Fv", note: "Unit: Watt" },
+    { name: "Efficiency 效率", eq: "η = W_useful / W_input", note: "Always < 1" },
+  ]},
+  { topic: "Momentum 动量", formulas: [
+    { name: "Momentum 动量", eq: "p = mv", note: "Vector, kg·m/s" },
+    { name: "Impulse 冲量", eq: "J = FΔt = Δp", note: "" },
+    { name: "Conservation 守恒", eq: "p₁ + p₂ = p₁' + p₂'", note: "Isolated system" },
+    { name: "Perfectly inelastic 完全非弹", eq: "(m₁+m₂)v' = m₁v₁ + m₂v₂", note: "Stick together" },
+    { name: "Force-momentum form", eq: "F = Δp / Δt", note: "Newton's 2nd" },
+    { name: "Elastic collision KE", eq: "½m₁v₁² + ½m₂v₂² = const", note: "KE conserved" },
+  ]},
+  { topic: "Circular Motion & Gravity 圆周运动", formulas: [
+    { name: "Period 周期", eq: "T = 2πr / v", note: "Unit: seconds" },
+    { name: "Frequency 频率", eq: "f = 1 / T", note: "Unit: Hz" },
+    { name: "Angular velocity 角速度", eq: "ω = 2πf = 2π/T", note: "rad/s" },
+    { name: "Linear speed 线速度", eq: "v = ωr", note: "" },
+    { name: "Centripetal accel. 向心加速度", eq: "a = v²/r = ω²r", note: "Points inward" },
+    { name: "Centripetal force 向心力", eq: "F = mv²/r = mω²r", note: "" },
+    { name: "Universal gravitation 万有引力", eq: "F = Gm₁m₂ / r²", note: "G = 6.67×10⁻¹¹" },
+    { name: "Orbital velocity 轨道速度", eq: "v = √(GM/r)", note: "" },
+    { name: "Kepler's 3rd 开普勒第三", eq: "T² / r³ = const", note: "Same central body" },
+    { name: "Escape velocity 逃逸速度", eq: "v_e = √(2gR)", note: "Earth: 11.2 km/s" },
+  ]},
+  { topic: "Electrostatics 静电学", formulas: [
+    { name: "Coulomb's law 库仑定律", eq: "F = kq₁q₂ / r²", note: "k = 9×10⁹ N·m²/C²" },
+    { name: "Electric field 电场强度", eq: "E = F/q = kQ/r²", note: "N/C or V/m" },
+    { name: "Electric potential 电势", eq: "V = kQ / r", note: "Scalar, unit: V" },
+    { name: "Potential difference 电势差", eq: "U = V₁ − V₂ = W/q", note: "" },
+    { name: "Uniform field 匀强电场", eq: "E = U / d", note: "" },
+    { name: "Work by E-field 电场力做功", eq: "W = qU = qEd", note: "" },
+    { name: "Capacitance 电容", eq: "C = Q / U", note: "Unit: Farad" },
+    { name: "Capacitor energy 电容储能", eq: "E = ½CU²", note: "" },
+  ]},
+  { topic: "DC Circuits 直流电路", formulas: [
+    { name: "Ohm's law 欧姆定律", eq: "U = IR", note: "" },
+    { name: "Current 电流", eq: "I = Q / t", note: "Unit: Ampere" },
+    { name: "Series 串联", eq: "R = R₁ + R₂ + …", note: "Same I" },
+    { name: "Parallel 并联", eq: "1/R = 1/R₁ + 1/R₂ + …", note: "Same U" },
+    { name: "Power 电功率", eq: "P = UI = I²R = U²/R", note: "Unit: Watt" },
+    { name: "Electrical energy 电能", eq: "W = UIt = I²Rt", note: "" },
+    { name: "EMF circuit 含源电路", eq: "ε = I(R + r)", note: "r = internal resistance" },
+    { name: "Terminal voltage 路端电压", eq: "U = ε − Ir", note: "" },
+    { name: "Kirchhoff current KCL", eq: "ΣI_in = ΣI_out", note: "At a node" },
+    { name: "Kirchhoff voltage KVL", eq: "ΣV = 0", note: "Around a loop" },
+    { name: "Resistivity 电阻率", eq: "R = ρL / A", note: "ρ = material property" },
+  ]},
+  { topic: "Magnetism 磁学", formulas: [
+    { name: "Magnetic flux 磁通量", eq: "Φ = BA cosθ", note: "Unit: Weber (Wb)" },
+    { name: "Ampere force 安培力", eq: "F = BIL sinθ", note: "On wire" },
+    { name: "Lorentz force 洛伦兹力", eq: "F = qvB sinθ", note: "On moving charge" },
+    { name: "Faraday's law 法拉第", eq: "ε = −ΔΦ / Δt", note: "Induced EMF" },
+    { name: "Motional EMF 动生电动势", eq: "ε = BLv", note: "" },
+    { name: "Solenoid field 螺线管", eq: "B = μ₀nI", note: "n = turns/metre" },
+    { name: "Circular radius in B 圆运动", eq: "r = mv / qB", note: "" },
+    { name: "Transformer voltage 变压器", eq: "U₁/U₂ = N₁/N₂", note: "" },
+    { name: "Transformer current 变压器电流", eq: "I₁N₁ = I₂N₂", note: "Ideal" },
+  ]},
+  { topic: "Waves 波动", formulas: [
+    { name: "Wave speed 波速", eq: "v = fλ = λ/T", note: "" },
+    { name: "Period 周期", eq: "T = 1/f", note: "" },
+    { name: "SHM displacement 简谐运动", eq: "x = A cos(ωt + φ)", note: "" },
+    { name: "SHM angular freq 角频率", eq: "ω = 2πf", note: "" },
+    { name: "Spring SHM 弹簧振子", eq: "T = 2π√(m/k)", note: "" },
+    { name: "Pendulum 单摆", eq: "T = 2π√(L/g)", note: "Small angle" },
+    { name: "Superposition 叠加", eq: "y = y₁ + y₂", note: "" },
+    { name: "Doppler 多普勒", eq: "f' = f·v / (v ∓ v_s)", note: "− if approaching" },
+    { name: "Double-slit fringe 双缝", eq: "Δy = λL / d", note: "" },
+  ]},
+  { topic: "Thermodynamics 热力学", formulas: [
+    { name: "Ideal gas law 理想气体", eq: "PV = nRT", note: "R = 8.314 J/mol·K" },
+    { name: "Boyle's law 玻意耳", eq: "P₁V₁ = P₂V₂", note: "Constant T" },
+    { name: "Charles's law 查理", eq: "V₁/T₁ = V₂/T₂", note: "Constant P" },
+    { name: "Gay-Lussac 盖-吕萨克", eq: "P₁/T₁ = P₂/T₂", note: "Constant V" },
+    { name: "Kelvin conversion 开尔文", eq: "T(K) = T(°C) + 273.15", note: "" },
+    { name: "Heat 热量", eq: "Q = mcΔT", note: "c = specific heat" },
+    { name: "1st Law 第一定律", eq: "ΔU = Q − W", note: "Q in, W by gas" },
+    { name: "Work by gas 气体做功", eq: "W = PΔV", note: "Isobaric" },
+    { name: "Molecule KE 分子动能", eq: "Ēₖ = (3/2)kT", note: "k = 1.38×10⁻²³ J/K" },
+  ]},
+  { topic: "Optics 光学", formulas: [
+    { name: "Reflection 反射定律", eq: "θᵢ = θᵣ", note: "" },
+    { name: "Snell's law 折射定律", eq: "n₁ sinθ₁ = n₂ sinθ₂", note: "" },
+    { name: "Refractive index 折射率", eq: "n = c/v", note: "c = 3×10⁸ m/s" },
+    { name: "Critical angle 临界角", eq: "sinθ_c = n₂/n₁", note: "TIR condition" },
+    { name: "Thin lens 薄透镜", eq: "1/f = 1/u + 1/v", note: "" },
+    { name: "Magnification 放大率", eq: "m = v/u = h'/h", note: "" },
+    { name: "Mirror 球面镜", eq: "1/f = 1/u + 1/v,  f = R/2", note: "" },
+    { name: "Double-slit 双缝", eq: "Δy = λL / d", note: "Fringe spacing" },
+    { name: "Diffraction grating 光栅", eq: "d sinθ = mλ", note: "m = order number" },
+  ]},
+  { topic: "Modern Physics 现代物理", formulas: [
+    { name: "Photon energy 光子能量", eq: "E = hf = hc/λ", note: "h = 6.63×10⁻³⁴ J·s" },
+    { name: "Photoelectric 光电效应", eq: "Eₖ = hf − W", note: "W = work function" },
+    { name: "de Broglie 德布罗意", eq: "λ = h/p = h/mv", note: "" },
+    { name: "Bohr energy levels 玻尔", eq: "Eₙ = −13.6/n² eV", note: "Hydrogen" },
+    { name: "Photon transition 跃迁", eq: "ΔE = hf = E₂ − E₁", note: "" },
+    { name: "Mass-energy 质能方程", eq: "E = mc²", note: "c = 3×10⁸ m/s" },
+    { name: "Mass defect 质量亏损", eq: "ΔE = Δmc²", note: "Nuclear binding" },
+    { name: "Radioactive decay 放射", eq: "N = N₀ · (½)^(t/T½)", note: "" },
+    { name: "Half-life 半衰期", eq: "T½ = ln2 / λ_decay", note: "" },
+  ]},
+];
+
+function renderFormulas() {
+  const container = document.getElementById('formulaSheet');
+  container.innerHTML = '';
+  FORMULA_SHEET.forEach(section => {
+    const block = document.createElement('div');
+    block.className = 'formula-topic-block';
+    block.innerHTML = `<div class="formula-topic-header">${section.topic}</div>`;
+    const grid = document.createElement('div');
+    grid.className = 'formula-grid';
+    section.formulas.forEach(f => {
+      const item = document.createElement('div');
+      item.className = 'formula-item';
+      item.innerHTML = `
+        <div class="formula-name">${f.name}</div>
+        <div class="formula-eq">${f.eq}</div>
+        ${f.note ? `<div class="formula-note">${f.note}</div>` : ''}
+      `;
+      grid.appendChild(item);
+    });
+    block.appendChild(grid);
+    container.appendChild(block);
+  });
+}
+
+function toggleFormulas() {
+  const sheet = document.getElementById('formulaSheet');
+  const isVisible = sheet.classList.toggle('visible');
+  document.querySelector('.btn-formula').textContent = isVisible
+    ? 'Hide Formula Sheet ↑'
+    : 'Show Formula Sheet ↓';
+  if (isVisible) renderFormulas();
+}
+
+// INIT
+buildTopicFilter();
+buildDeck();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('SW registered'))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
